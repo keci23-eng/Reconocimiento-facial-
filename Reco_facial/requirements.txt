@@ -1,0 +1,7 @@
+Django>=3.2,<4.0
+djangorestframework
+opencv-python
+face_recognition
+numpy
+Pillow
+mysqlclient

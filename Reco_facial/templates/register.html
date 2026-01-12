@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Registrar Estudiante</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    :root{
+      --radius-xl: 18px;
+      --radius-lg: 14px;
+      --shadow: 0 18px 50px rgba(2, 6, 23, .10);
+      --stroke: rgba(15, 23, 42, .10);
+    }
+
+    body{
+      min-height: 100vh;
+      background:
+        radial-gradient(900px 500px at 12% 10%, rgba(99,102,241,.22) 0%, rgba(99,102,241,0) 55%),
+        radial-gradient(900px 500px at 88% 18%, rgba(34,197,94,.18) 0%, rgba(34,197,94,0) 55%),
+        radial-gradient(900px 500px at 60% 95%, rgba(14,165,233,.18) 0%, rgba(14,165,233,0) 55%),
+        #f6f7fb;
+    }
+
+    .app-shell{
+      max-width: 1100px;
+    }
+
+    .card-soft{
+      border-radius: var(--radius-xl);
+      background: rgba(255,255,255,.92);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--stroke);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .topbar{
+      border-bottom: 1px solid var(--stroke);
+      background: linear-gradient(90deg, rgba(99,102,241,.10), rgba(14,165,233,.08), rgba(34,197,94,.08));
+    }
+
+    .brand-chip{
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .5rem .75rem;
+      border-radius: 999px;
+      border: 1px solid rgba(99,102,241,.25);
+      background: rgba(99,102,241,.12);
+      color: #3730a3;
+      font-weight: 700;
+      font-size: .9rem;
+    }
+
+    .btn-pill{
+      border-radius: 999px;
+      padding-left: 1.1rem;
+      padding-right: 1.1rem;
+    }
+
+    /* Frame cámara */
+    .video-frame{
+      position: relative;
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      background: #0b1220;
+      border: 1px solid rgba(15, 23, 42, .14);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
+    }
+
+    #video{
+      width: 100%;
+      height: auto;
+      display: block;
+      background: #0b1220;
+    }
+
+    #overlay{
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .hint{
+      color: #64748b;
+      font-size: .95rem;
+    }
+
+    /* Inputs más “pro” */
+    .form-control{
+      border-radius: 14px;
+      border: 1px solid rgba(15, 23, 42, .12);
+      padding: .75rem .9rem;
+    }
+
+    .form-control:focus{
+      box-shadow: 0 0 0 .25rem rgba(99,102,241,.18);
+      border-color: rgba(99,102,241,.45);
+    }
+
+    .section-title{
+      font-weight: 800;
+      letter-spacing: -.02em;
+    }
+
+    /* Botón principal con degradado */
+    .btn-gradient{
+      border: 0;
+      border-radius: 999px;
+      padding: .9rem 1.1rem;
+      font-weight: 700;
+      box-shadow: 0 14px 30px rgba(99,102,241,.22);
+      background: linear-gradient(90deg, #4f46e5, #0ea5e9);
+    }
+    .btn-gradient:hover{
+      filter: brightness(1.03);
+    }
+
+    /* Caja estado */
+    #status{
+      border-radius: 14px;
+      border: 1px dashed rgba(15, 23, 42, .18);
+      padding: .75rem .9rem;
+      background: rgba(2, 6, 23, .02);
+      min-height: 48px;
+    }
+
+    .side-card{
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,.8);
+      box-shadow: 0 10px 26px rgba(2, 6, 23, .06);
+    }
+
+    .badge-soft-success{
+      background: rgba(34,197,94,.12);
+      border: 1px solid rgba(34,197,94,.20);
+      color: #166534;
+      font-weight: 700;
+    }
+  </style>
+</head>
+
+<body class="py-4">
+  <div class="container app-shell">
+
+    <div class="card card-soft">
+      <!-- Header -->
+      <div class="topbar px-4 py-3 d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
+        <div>
+          <div class="brand-chip">🧑‍🎓 Registro</div>
+          <div class="section-title h3 mb-0 mt-2">Registrar estudiante</div>
+          <div class="hint mt-1">Captura el rostro y guarda los datos en el sistema.</div>
+        </div>
+
+        <div class="d-flex gap-2">
+          <a href="/app/" class="btn btn-outline-secondary btn-pill">⬅ Volver</a>
+          <a href="/logout/" class="btn btn-outline-danger btn-pill">Cerrar sesión</a>
+          <span class="badge badge-soft-success rounded-pill px-3 py-2 align-self-md-center">Cámara requerida</span>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <div class="p-4">
+        <div class="row g-4 align-items-start">
+
+          <!-- Cámara -->
+          <div class="col-lg-7">
+            <div class="side-card p-3 p-md-4">
+              <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="fw-semibold">📷 Vista previa</div>
+                <span class="badge text-bg-light border">Recomendado: buena iluminación</span>
+              </div>
+
+              <div class="video-frame" style="position:relative; display:inline-block;">
+                <video id="video" autoplay muted playsinline style="display:block;"></video>
+                <canvas id="overlay" style="position:absolute; top:0; left:0; pointer-events:none;"></canvas>
+              </div>
+
+              <div class="hint mt-3 mb-0">
+                Coloca el rostro centrado, sin sombras fuertes, y mira al frente antes de capturar.
+              </div>
+            </div>
+          </div>
+
+          <!-- Formulario -->
+          <div class="col-lg-5">
+            <div class="side-card p-3 p-md-4">
+              <div class="fw-semibold mb-3">📝 Datos del estudiante</div>
+
+              <form id="registerForm" novalidate>
+                <div class="mb-3">
+                  <label class="form-label fw-bold">Nombre</label>
+                  <input id="nameInput" class="form-control" placeholder="Ej: Juan Pérez" required>
+                  <div class="form-text">Escribe nombre y apellido.</div>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label fw-bold">Carrera</label>
+                  <input id="careerInput" class="form-control" value="SISTEMAS Y GESTION DE DATA" required>
+                  <div class="form-text">Puedes editarla si aplica.</div>
+                </div>
+
+                <div class="d-grid gap-2">
+                  <button id="captureRegisterBtn" type="button" class="btn btn-outline-primary w-100">📸 Capturar</button>
+                </div>
+
+                <div class="mt-3">
+                  <label class="form-label fw-bold">Subir Imagen</label>
+                  <div class="d-flex gap-2">
+                    <a id="goUploadBtn" href="/register/upload/" class="btn btn-danger w-100">➡ Ir a subir imagen</a>
+                  </div>
+                  <div class="form-text">
+                    .</div>
+                </div>
+
+                <div class="mt-3">
+                  <div class="fw-semibold mb-2">Estado</div>
+                  <div id="status" class="text-center text-muted">Listo para capturar.</div>
+                </div>
+              </form>
+
+              <div class="alert alert-info mt-3 mb-0 rounded-4">
+                Tip: si la detección falla, prueba acercarte un poco y mejora la luz frontal.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="/static/js/register.js"></script>
+
+  <!-- Opcional: setear tamaño del canvas al del video si tu JS no lo hace -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const video = document.getElementById('video');
+      const overlay = document.getElementById('overlay');
+      video?.addEventListener('loadedmetadata', () => {
+        overlay.width = video.videoWidth || 640;
+        overlay.height = video.videoHeight || 480;
+      });
+    });
+  </script>
+</body>
+</html>

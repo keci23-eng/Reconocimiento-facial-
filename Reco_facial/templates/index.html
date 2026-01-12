@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reconocimiento Facial</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    :root{
+      --radius-2xl: 22px;
+      --radius-xl: 18px;
+      --radius-lg: 14px;
+      --stroke: rgba(15, 23, 42, .10);
+      --shadow: 0 22px 70px rgba(2, 6, 23, .12);
+      --indigo: #4f46e5;
+      --sky: #0ea5e9;
+      --emerald: #22c55e;
+      --text: #0f172a;
+      --muted: #64748b;
+    }
+
+    body{
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(1100px 650px at 10% 12%, rgba(79,70,229,.22) 0%, rgba(79,70,229,0) 55%),
+        radial-gradient(1000px 600px at 88% 18%, rgba(14,165,233,.18) 0%, rgba(14,165,233,0) 55%),
+        radial-gradient(900px 560px at 55% 92%, rgba(34,197,94,.16) 0%, rgba(34,197,94,0) 55%),
+        linear-gradient(180deg, #f7f8fc 0%, #f4f6fb 100%);
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before{
+      content:"";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image: radial-gradient(rgba(2,6,23,.06) 1px, transparent 1px);
+      background-size: 22px 22px;
+      mask-image: radial-gradient(650px 400px at 50% 10%, black 0%, transparent 72%);
+      opacity: .55;
+    }
+
+    .app-shell{ max-width: 1240px; }
+
+    .card-glass{
+      border-radius: var(--radius-2xl);
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,.92);
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .top-rim{
+      height: 6px;
+      background: linear-gradient(90deg, var(--indigo), var(--sky), var(--emerald));
+      opacity: .95;
+    }
+
+    .topbar{
+      border-radius: var(--radius-2xl);
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,.82);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 12px 40px rgba(2,6,23,.08);
+      overflow: hidden;
+    }
+
+    .brand-chip{
+      display: inline-flex;
+      align-items: center;
+      gap: .55rem;
+      padding: .5rem .85rem;
+      border-radius: 999px;
+      border: 1px solid rgba(79,70,229,.20);
+      background: rgba(79,70,229,.10);
+      color: #3730a3;
+      font-weight: 900;
+      font-size: .92rem;
+      letter-spacing: .2px;
+    }
+
+    .hint{ color: var(--muted); font-size: .95rem; }
+
+    .btn-pill{
+      border-radius: 999px;
+      padding-left: 1.1rem;
+      padding-right: 1.1rem;
+      font-weight: 800;
+    }
+
+    .btn-gradient{
+      border: 0;
+      border-radius: 999px;
+      padding: .85rem 1.05rem;
+      font-weight: 900;
+      letter-spacing: .2px;
+      background: linear-gradient(90deg, var(--indigo), var(--sky));
+      box-shadow: 0 18px 40px rgba(79,70,229,.18);
+      transition: transform .15s ease, filter .15s ease;
+    }
+    .btn-gradient:hover{ filter: brightness(1.03); transform: translateY(-1px); }
+    .btn-gradient:active{ transform: translateY(0px); }
+
+    .panel{
+      border-radius: var(--radius-2xl);
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,.92);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 18px 55px rgba(2,6,23,.10);
+      overflow: hidden;
+    }
+
+    .panel-head{
+      padding: 16px 18px;
+      border-bottom: 1px solid rgba(15,23,42,.08);
+      background: rgba(2,6,23,.02);
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .panel-title{
+      font-weight: 900;
+      letter-spacing: -.02em;
+      margin: 0;
+    }
+
+    .panel-body{ padding: 18px; }
+
+    .video-shell{
+      border-radius: var(--radius-2xl);
+      border: 1px solid rgba(15,23,42,.12);
+      overflow: hidden;
+      background: #0b1220;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
+      width: 640px;
+      max-width: 100%;
+    }
+
+    #videoWrapper{
+      position: relative;
+      width: 640px;
+      max-width: 100%;
+    }
+
+    #video, #overlay{
+      width: 640px;
+      height: 480px;
+      max-width: 100%;
+      display: block;
+    }
+
+    #overlay{
+      position: absolute;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+    }
+
+    .status-pill{
+      border-radius: 999px;
+      border: 1px solid rgba(15,23,42,.10);
+      background: rgba(2,6,23,.02);
+      padding: .45rem .8rem;
+      font-weight: 800;
+      color: #0f172a;
+      white-space: nowrap;
+    }
+
+    .students-scroll{
+      max-height: 460px;
+      overflow: auto;
+      padding-right: 2px;
+    }
+
+    .list-group-item{
+      border-radius: 14px;
+      border: 1px solid rgba(15, 23, 42, .08);
+      margin-bottom: .6rem;
+      box-shadow: 0 8px 20px rgba(2, 6, 23, .05);
+    }
+
+    .search{
+      border-radius: 999px;
+      border: 1px solid rgba(15,23,42,.12);
+      padding: .75rem .95rem;
+    }
+    .search:focus{
+      outline: none;
+      box-shadow: 0 0 0 .25rem rgba(79,70,229,.18);
+      border-color: rgba(79,70,229,.45);
+    }
+
+    .kbd{
+      border-radius: 10px;
+      padding: .2rem .45rem;
+      border: 1px solid rgba(15,23,42,.10);
+      background: rgba(255,255,255,.65);
+      font-weight: 800;
+      font-size: .85rem;
+      color: #334155;
+    }
+
+    @media (max-width: 991.98px){
+      .video-shell, #videoWrapper, #video, #overlay{
+        width: 100%;
+        height: auto;
+      }
+      #video, #overlay{
+        aspect-ratio: 4 / 3;
+      }
+    }
+  </style>
+</head>
+
+<body class="py-4">
+  <div class="container app-shell">
+
+    <div class="topbar mb-4">
+      <div class="top-rim"></div>
+      <div class="p-3 p-md-4 d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
+        <div>
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <span class="brand-chip">📷 En vivo</span>
+            <h1 class="h3 mb-0 fw-bold">Reconocimiento Facial</h1>
+          </div>
+          <div class="hint mt-1">
+            Detección automática ~0.9s · Estudiantes cada 5s · Atajo: <span class="kbd">Detectar</span>
+          </div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2">
+          {% if request.user.is_authenticated and is_admin %}
+            <a href="/create_users/" class="btn btn-outline-secondary btn-pill">👤 Crear usuarios</a>
+          {% endif %}
+          <a href="/register" class="btn btn-gradient btn-pill">➕ Registrar estudiante</a>
+          <a href="/logout/" class="btn btn-outline-danger btn-pill">Cerrar sesión</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-8">
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <p class="panel-title mb-0">Cámara</p>
+              <div class="hint">Permite el acceso a la cámara si el navegador lo solicita.</div>
+            </div>
+            <span class="badge text-bg-light border rounded-pill px-3 py-2">640×480</span>
+          </div>
+
+          <div class="panel-body">
+            <div class="video-shell">
+              <div id="videoWrapper">
+                <video id="video" autoplay muted playsinline></video>
+                <canvas id="overlay"></canvas>
+              </div>
+            </div>
+
+            <div class="d-flex flex-column flex-sm-row gap-2 mt-3 align-items-sm-center">
+              <button id="detectBtn" class="btn btn-success btn-pill">⚡ Detectar ahora</button>
+              <button class="btn btn-outline-secondary btn-pill" type="button" onclick="location.reload()">🔄 Reiniciar</button>
+              <div class="ms-sm-auto status-pill">
+                Estado: <span id="cameraStatus">iniciando…</span>
+              </div>
+            </div>
+
+            <div class="alert alert-info mt-3 mb-0 rounded-4">
+              Consejo: mantén el rostro centrado y con buena iluminación para mejorar la precisión.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4">
+        <div class="panel">
+          <div class="panel-head">
+            <p class="panel-title mb-0">👥 Estudiantes registrados</p>
+            <span class="badge text-bg-light border rounded-pill px-3 py-2" id="studentsCount">0</span>
+          </div>
+
+          <div class="panel-body">
+            <input id="studentSearch" class="search w-100 mb-3" placeholder="Buscar por nombre o carrera...">
+
+            <ul id="studentsList" class="list-group students-scroll"></ul>
+
+            <div class="hint mt-3">La lista se actualiza automáticamente.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="/static/js/live.js"></script>
+</body>
+</html>

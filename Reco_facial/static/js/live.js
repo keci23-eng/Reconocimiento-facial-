@@ -46,7 +46,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   let lastRequest = 0;
   // send detection to server every 8000 ms (8 seconds)
-  const INTERVAL_MS = 8000;
+  const INTERVAL_MS = 7000;
+   
 
   async function sendDetectionOnce(small=false){
     const now = Date.now();

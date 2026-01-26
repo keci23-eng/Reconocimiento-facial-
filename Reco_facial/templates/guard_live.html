@@ -1,172 +1,138 @@
+{% load static %}
 <!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Guard - Cámara</title>
+  <title>Cámara en vivo</title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
-  <style>
-    :root{
-      --radius-xl: 18px;
-      --radius-lg: 14px;
-      --stroke: rgba(15, 23, 42, .10);
-      --shadow: 0 18px 55px rgba(2, 6, 23, .12);
-    }
-
-    body{
-      min-height: 100vh;
-      background:
-        radial-gradient(900px 500px at 12% 10%, rgba(99,102,241,.22) 0%, rgba(99,102,241,0) 55%),
-        radial-gradient(900px 500px at 88% 18%, rgba(14,165,233,.18) 0%, rgba(14,165,233,0) 55%),
-        radial-gradient(900px 500px at 50% 95%, rgba(34,197,94,.16) 0%, rgba(34,197,94,0) 55%),
-        #f6f7fb;
-    }
-
-    .app-shell{ max-width: 1200px; }
-
-    .card-glass{
-      border-radius: var(--radius-xl);
-      border: 1px solid var(--stroke);
-      background: rgba(255,255,255,.92);
-      backdrop-filter: blur(8px);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-
-    .topbar{
-      border-bottom: 1px solid var(--stroke);
-      background: linear-gradient(90deg, rgba(99,102,241,.10), rgba(14,165,233,.08), rgba(34,197,94,.08));
-    }
-
-    .brand-chip{
-      display: inline-flex;
-      align-items: center;
-      gap: .5rem;
-      padding: .45rem .75rem;
-      border-radius: 999px;
-      border: 1px solid rgba(99,102,241,.25);
-      background: rgba(99,102,241,.12);
-      color: #3730a3;
-      font-weight: 800;
-      font-size: .9rem;
-    }
-
-    .btn-pill{
-      border-radius: 999px;
-      padding-left: 1.1rem;
-      padding-right: 1.1rem;
-    }
-
-    .hint{ color:#64748b; font-size:.95rem; }
-
-    /* Cámara */
-    #videoWrapper{
-      position: relative;
-      border-radius: var(--radius-xl);
-      overflow: hidden;
-      background: #0b1220;
-      border: 1px solid rgba(15, 23, 42, .14);
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
-      width: 100%;
-    }
-
-    #video{
-      width: 100%;
-      height: auto;
-      display: block;
-      background: #0b1220;
-    }
-
-    #overlay{
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-    }
-
-    /* Lista */
-    .students-scroll{
-      max-height: 520px;
-      overflow: auto;
-    }
-
-    .list-group-item{
-      border-radius: 12px;
-      border: 1px solid rgba(15, 23, 42, .08);
-      margin-bottom: .6rem;
-      box-shadow: 0 6px 16px rgba(2, 6, 23, .04);
-    }
-  </style>
+  <link rel="stylesheet" href="{% static 'css/login.css' %}">
+  <link rel="icon" href="{% static 'images/logo.png' %}" type="image/png">
 </head>
 
-<body class="py-4">
-  <div class="container app-shell">
+<body class="app-bg">
 
-    <div class="card-glass">
+  <div class="page-wrap">
+    <div class="container app-shell">
 
-      <!-- Header -->
-      <div class="topbar px-4 py-3 d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
-        <div>
-          <div class="brand-chip">🛡️ Guardia</div>
-          <div class="h3 fw-bold mb-0 mt-2">Cámara en vivo</div>
-          <div class="hint mt-1">Monitoreo con detección automática.</div>
-        </div>
-
-        <div class="d-flex gap-2">
-          <a href="/guard/detections/" class="btn btn-outline-primary btn-pill">Ver detecciones</a>
-          <a href="/logout/" class="btn btn-outline-secondary btn-pill">Cerrar sesión</a>
-        </div>
-      </div>
-
-      <!-- Content -->
-      <div class="p-4">
-        <div class="row g-4 align-items-start">
-
-          <!-- CAMARA -->
-          <div class="col-lg-8">
-            <div class="p-3 p-md-4 border rounded-4" style="border-color: rgba(15,23,42,.10)!important; background: rgba(255,255,255,.75);">
-              <div class="d-flex align-items-center justify-content-between mb-3">
-                <div class="fw-semibold">📷 </div>
-                <span class="badge text-bg-light border">En vivo</span>
-              </div>
-
-              <div id="videoWrapper">
-                <video id="video" autoplay muted playsinline></video>
-                <canvas id="overlay"></canvas>
-              </div>
-
-              <div class="hint mt-3 mb-0">
-                
+      <!-- TOPBAR -->
+      <header class="topbar-pro">
+        <div class="topbar-left">
+          <div class="app-brand">
+            <div class="logo">RF</div>
+            <div>
+              <div class="brand-title">Sistema de Acceso</div>
+              <div class="breadcrumbs">
+                <span>Guardia</span>
+                <span class="crumb-sep">/</span>
+                <span class="crumb-active">Cámara</span>
               </div>
             </div>
+          </div>
+
+          <div class="topbar-meta">
+            <span class="chip chip-live">En vivo</span>
+            <span class="chip chip-muted">Detección automática</span>
+          </div>
+        </div>
+
+        <div class="topbar-actions">
+          <a href="/guard/detections/" class="btn btn-outline-secondary btn-sm btn-soft">
+            Detecciones
+          </a>
+          <a href="/logout/" class="btn btn-outline-secondary btn-sm btn-soft">
+            Cerrar sesión
+          </a>
+        </div>
+      </header>
+
+      <!-- BANNER / INFO -->
+      <section class="hero-strip">
+        <div class="hero-copy">
+          <div class="hero-title">Monitoreo en tiempo real</div>
+          <div class="hero-sub">
+            Mantén la cámara activa para registrar ingresos y asistencia.
+          </div>
+        </div>
+        <div class="hero-stats">
+          <div class="mini-stat">
+            <div class="mini-stat-label">Estado</div>
+            <div class="mini-stat-value">Activo</div>
+          </div>
+          <div class="mini-stat">
+            <div class="mini-stat-label">Detecciones</div>
+            <div class="mini-stat-value" id="studentsCountTop">0</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CONTENIDO -->
+      <main class="app-card app-card-pro">
+        <div class="row g-4">
+
+          <!-- CÁMARA -->
+          <div class="col-lg-8">
+            <section class="panel panel-pro">
+              <div class="panel-head">
+                <div>
+                  <div class="panel-title">Cámara</div>
+                  <div class="panel-sub">Vista en vivo con superposición de detección.</div>
+                </div>
+                <div class="panel-right">
+                  <span class="pill">HD</span>
+                  <span class="pill pill-live">LIVE</span>
+                </div>
+              </div>
+
+              <div class="video-shell">
+                <div class="video-topline"></div>
+                <div class="video-wrapper">
+                  <video id="video" autoplay muted playsinline></video>
+                  <canvas id="overlay"></canvas>
+                </div>
+              </div>
+
+              <div class="panel-foot">
+                <span class="dot-live"></span>
+                <span>Conectado</span>
+                <span class="sep">•</span>
+                <span class="muted">Ajusta la cámara para mejor detección</span>
+              </div>
+            </section>
           </div>
 
           <!-- LISTA -->
           <div class="col-lg-4">
-            <div class="p-3 p-md-4 border rounded-4" style="border-color: rgba(15,23,42,.10)!important; background: rgba(255,255,255,.75);">
-              <div class="d-flex align-items-center justify-content-between mb-2">
-                <div class="fw-semibold">👥 Estudiantes</div>
-                <span class="badge text-bg-light border" id="studentsCount">0</span>
+            <section class="panel panel-pro">
+              <div class="panel-head">
+                <div>
+                  <div class="panel-title">Estudiantes</div>
+                  <div class="panel-sub">Detectados recientemente.</div>
+                </div>
+                <div class="panel-right">
+                  <span class="count-pill" id="studentsCount">0</span>
+                </div>
               </div>
 
-              <div class="hint mb-3">Actualiza automáticamente.</div>
+              <div class="students-scroll list-pro">
+                <ul id="studentsList" class="list-group"></ul>
+              </div>
 
-              <ul id="studentsList" class="list-group students-scroll"></ul>
-            </div>
+              <div class="panel-foot subtle">
+                <span class="muted">Actualiza automáticamente</span>
+              </div>
+            </section>
           </div>
 
         </div>
-      </div>
+      </main>
 
     </div>
   </div>
 
-  <script src="/static/js/live.js"></script>
+  <script src="{% static 'js/live.js' %}"></script>
 
-  <!-- Opcional (si tu live.js no lo hace): sincroniza canvas con video -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const video = document.getElementById('video');
@@ -176,7 +142,21 @@
         overlay.width = video.videoWidth || 640;
         overlay.height = video.videoHeight || 480;
       });
+
+      // espejo opcional si tu cámara se ve “al revés”
+      // video.style.transform = "scaleX(-1)";
     });
+
+    // si tu live.js actualiza #studentsCount, aquí reflejamos arriba también
+    const syncCount = () => {
+      const c = document.getElementById('studentsCount')?.textContent ?? "0";
+      const top = document.getElementById('studentsCountTop');
+      if(top) top.textContent = c;
+    };
+    const obs = new MutationObserver(syncCount);
+    const countEl = document.getElementById('studentsCount');
+    if(countEl) obs.observe(countEl, { childList: true, characterData: true, subtree: true });
   </script>
+
 </body>
 </html>

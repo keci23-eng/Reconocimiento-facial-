@@ -1,405 +1,220 @@
+{% load static %}
 <!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Crear Usuario</title>
+  <title>Crear usuario</title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
-  <style>
-    :root{
-      --radius-2xl: 22px;
-      --radius-xl: 18px;
-      --radius-lg: 14px;
-
-      --stroke: rgba(15, 23, 42, .10);
-      --stroke-strong: rgba(15, 23, 42, .14);
-      --shadow: 0 22px 70px rgba(2, 6, 23, .14);
-
-      --indigo: #4f46e5;
-      --sky: #0ea5e9;
-      --emerald: #22c55e;
-
-      --text: #0f172a;
-      --muted: #64748b;
-    }
-
-    body{
-      min-height: 100vh;
-      color: var(--text);
-      background:
-        radial-gradient(1100px 650px at 10% 12%, rgba(79,70,229,.24) 0%, rgba(79,70,229,0) 55%),
-        radial-gradient(1000px 600px at 88% 18%, rgba(14,165,233,.20) 0%, rgba(14,165,233,0) 55%),
-        radial-gradient(900px 560px at 55% 92%, rgba(34,197,94,.16) 0%, rgba(34,197,94,0) 55%),
-        linear-gradient(180deg, #f7f8fc 0%, #f4f6fb 100%);
-      position: relative;
-      overflow-x: hidden;
-    }
-
-    /* patrón sutil */
-    body::before{
-      content:"";
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      background-image: radial-gradient(rgba(2,6,23,.06) 1px, transparent 1px);
-      background-size: 22px 22px;
-      mask-image: radial-gradient(650px 400px at 50% 10%, black 0%, transparent 72%);
-      opacity: .55;
-    }
-
-    .app-shell{ max-width: 1120px; }
-
-    .card-glass{
-      border-radius: var(--radius-2xl);
-      border: 1px solid var(--stroke);
-      background: rgba(255,255,255,.92);
-      backdrop-filter: blur(10px);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-
-    .top-rim{
-      height: 6px;
-      background: linear-gradient(90deg, var(--indigo), var(--sky), var(--emerald));
-      opacity: .95;
-    }
-
-    .topbar{
-      border-bottom: 1px solid var(--stroke);
-      background: linear-gradient(90deg, rgba(79,70,229,.10), rgba(14,165,233,.08), rgba(34,197,94,.08));
-    }
-
-    .brand-chip{
-      display: inline-flex;
-      align-items: center;
-      gap: .55rem;
-      padding: .5rem .85rem;
-      border-radius: 999px;
-      border: 1px solid rgba(79,70,229,.22);
-      background: rgba(79,70,229,.10);
-      color: #3730a3;
-      font-weight: 900;
-      font-size: .92rem;
-      letter-spacing: .2px;
-    }
-
-    .btn-pill{
-      border-radius: 999px;
-      padding-left: 1.1rem;
-      padding-right: 1.1rem;
-      font-weight: 800;
-    }
-
-    .btn-gradient{
-      border: 0;
-      border-radius: 999px;
-      padding: .95rem 1.05rem;
-      font-weight: 900;
-      letter-spacing: .2px;
-      background: linear-gradient(90deg, var(--indigo), var(--sky));
-      box-shadow: 0 18px 40px rgba(79,70,229,.22);
-      transition: transform .15s ease, filter .15s ease;
-    }
-    .btn-gradient:hover{ filter: brightness(1.03); transform: translateY(-1px); }
-    .btn-gradient:active{ transform: translateY(0px); }
-
-    .hint{ color: var(--muted); font-size: .95rem; }
-
-    .section{
-      border-radius: var(--radius-2xl);
-      border: 1px solid rgba(15,23,42,.10);
-      background: rgba(255,255,255,.78);
-      box-shadow: 0 10px 26px rgba(2, 6, 23, .06);
-      overflow: hidden;
-    }
-
-    .section-head{
-      padding: 16px 18px;
-      border-bottom: 1px solid rgba(15,23,42,.08);
-      background: rgba(2,6,23,.02);
-      display:flex;
-      align-items:center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-    .section-title{
-      font-weight: 900;
-      letter-spacing: -.02em;
-      margin: 0;
-    }
-
-    .section-body{ padding: 18px; }
-
-    .form-label{
-      font-weight: 900;
-      color: #1f2937;
-    }
-
-    .control{
-      border-radius: var(--radius-xl);
-      border: 1px solid rgba(15,23,42,.12);
-      padding: .85rem 1rem;
-      background: rgba(255,255,255,.9);
-      transition: box-shadow .15s ease, border-color .15s ease, transform .15s ease;
-    }
-    .control:focus{
-      box-shadow: 0 0 0 .25rem rgba(79,70,229,.18);
-      border-color: rgba(79,70,229,.45);
-      outline: none;
-      transform: translateY(-1px);
-    }
-
-    .input-group-text{
-      border-radius: var(--radius-xl) 0 0 var(--radius-xl);
-      border: 1px solid rgba(15,23,42,.12);
-      border-right: 0;
-      background: rgba(2,6,23,.02);
-      padding: .85rem .9rem;
-      font-weight: 900;
-    }
-    .input-group .control{
-      border-radius: 0 var(--radius-xl) var(--radius-xl) 0;
-      border-left: 0;
-    }
-
-    .checks-card{
-      border-radius: var(--radius-xl);
-      border: 1px dashed rgba(15,23,42,.18);
-      background: rgba(2,6,23,.02);
-      padding: 12px 14px;
-    }
-
-    .form-check{
-      display: flex;
-      align-items: center;
-      gap: .55rem;
-      margin-bottom: 0;
-      min-height: 40px;
-    }
-
-    .form-check-input{
-      width: 1.15em;
-      height: 1.15em;
-      margin-top: 0;
-    }
-
-    .form-check-label{
-      font-weight: 900;
-      color: #0f172a;
-      user-select: none;
-    }
-
-    .toggle-btn{
-      border-radius: 999px;
-      border: 1px solid rgba(15,23,42,.12);
-      background: rgba(2,6,23,.02);
-      padding: .55rem .85rem;
-      font-weight: 900;
-      white-space: nowrap;
-    }
-
-    @media (max-width: 767.98px){
-      body{ padding: 14px; }
-      .section-body{ padding: 16px; }
-    }
-  </style>
+  <link rel="stylesheet" href="{% static 'css/login.css' %}">
+  <link rel="icon" href="{% static 'images/logo.png' %}" type="image/png">
 </head>
 
-<body class="py-4">
-  <div class="container app-shell">
+<body class="app-bg">
 
-    <div class="card-glass">
-      <div class="top-rim"></div>
+  <div class="page-wrap">
+    <div class="container app-shell">
 
-      <!-- Header -->
-      <div class="topbar px-4 py-3 d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
-        <div>
-          <div class="brand-chip">👤 Administración</div>
-          <div class="h3 fw-black fw-bold mb-0 mt-2">Crear usuario</div>
-          <div class="hint mt-1">Crea credenciales y asigna rol/grupo de forma segura.</div>
-        </div>
-
-        <div class="d-flex gap-2">
-          <a href="/app/" class="btn btn-outline-secondary btn-pill">⬅ Volver</a>
-        </div>
-      </div>
-
-      <!-- Body -->
-      <div class="p-4">
-        <div class="row g-4">
-
-          <!-- Mensajes -->
-          <div class="col-12">
-            {% if messages %}
-              {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} rounded-4 mb-2">
-                  {{ message }}
-                </div>
-              {% endfor %}
-            {% endif %}
+      <!-- TOPBAR -->
+      <header class="topbar-pro">
+        <div class="topbar-left">
+          <div class="app-brand">
+            <div class="logo">RF</div>
+            <div>
+              <div class="brand-title">Administración</div>
+              <div class="breadcrumbs">
+                <span>Usuarios</span>
+                <span class="crumb-sep">/</span>
+                <span class="crumb-active">Crear</span>
+              </div>
+            </div>
           </div>
 
-          <form method="post" action="" novalidate class="col-12">
-            {% csrf_token %}
-
-            <div class="row g-4">
-
-              <!-- Columna 1: Datos -->
-              <div class="col-lg-7">
-                <div class="section">
-                  <div class="section-head">
-                    <div>
-                      <p class="section-title mb-0">📝 Datos del usuario</p>
-                      <div class="hint">Información básica y credenciales.</div>
-                    </div>
-                    <span class="badge text-bg-light border rounded-pill px-3 py-2">Nuevo</span>
-                  </div>
-
-                  <div class="section-body">
-                    <div class="row g-3">
-
-                      <div class="col-md-6">
-                        <label class="form-label">Usuario (username)</label>
-                        <div class="input-group">
-                          <span class="input-group-text">👤</span>
-                          <input name="username" class="form-control control" placeholder="Ej: admin_guard" autocomplete="username" required />
-                        </div>
-                        <div class="form-text">Debe ser único. Evita espacios.</div>
-                      </div>
-
-                      <div class="col-md-6">
-                        <label class="form-label">Contraseña</label>
-                        <div class="input-group">
-                          <span class="input-group-text">🔒</span>
-                          <input id="password" name="password" type="password" class="form-control control" placeholder="••••••••" autocomplete="new-password" required />
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center mt-2">
-                          <div class="form-text m-0">Recomendada: 8+ caracteres con letras y números.</div>
-                          <button type="button" id="togglePass" class="toggle-btn">👁️ Mostrar</button>
-                        </div>
-                      </div>
-
-                      <div class="col-md-4">
-                        <label class="form-label">Nombre</label>
-                        <div class="input-group">
-                          <span class="input-group-text">🧾</span>
-                          <input name="first_name" class="form-control control" placeholder="Ej: Juan" />
-                        </div>
-                      </div>
-
-                      <div class="col-md-4">
-                        <label class="form-label">Apellido</label>
-                        <div class="input-group">
-                          <span class="input-group-text">🧾</span>
-                          <input name="last_name" class="form-control control" placeholder="Ej: Pérez" />
-                        </div>
-                      </div>
-
-                      <div class="col-md-4">
-                        <label class="form-label">Email</label>
-                        <div class="input-group">
-                          <span class="input-group-text">✉️</span>
-                          <input name="email" type="email" class="form-control control" placeholder="correo@dominio.com" autocomplete="email" />
-                        </div>
-                      </div>
-
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Columna 2: Rol/Permisos -->
-              <div class="col-lg-5">
-                <div class="section">
-                  <div class="section-head">
-                    <div>
-                      <p class="section-title mb-0">🛡️ Rol y permisos</p>
-                      <div class="hint">Define el nivel de acceso.</div>
-                    </div>
-                    <span class="badge text-bg-light border rounded-pill px-3 py-2">Acceso</span>
-                  </div>
-
-                  <div class="section-body">
-                    <div class="mb-3">
-                      <label class="form-label">Grupo / Rol</label>
-                      <div class="input-group">
-                        <span class="input-group-text">👥</span>
-                        <select name="group" class="form-select control">
-                          <option value="">— Sin grupo —</option>
-                          {% for g in groups %}
-                            <option value="{{ g.id }}">{{ g.name }}</option>
-                          {% endfor %}
-                        </select>
-                      </div>
-                      <div class="form-text">Asigna un grupo para permisos y acceso.</div>
-                    </div>
-
-                    <label class="form-label">Permisos</label>
-                    <div class="checks-card">
-                      <div class="row g-2">
-
-                        <div class="col-12">
-                          <div class="form-check">
-                            <input name="is_active" type="checkbox" class="form-check-input" checked value="1" id="is_active" />
-                            <label class="form-check-label" for="is_active">Activo</label>
-                          </div>
-                          <div class="hint">Permite que el usuario pueda iniciar sesión.</div>
-                        </div>
-
-                        <div class="col-12 mt-2">
-                          <div class="form-check">
-                            <input name="is_staff" type="checkbox" class="form-check-input" value="1" id="is_staff" />
-                            <label class="form-check-label" for="is_staff">Staff</label>
-                          </div>
-                          <div class="hint">Acceso a secciones administrativas.</div>
-                        </div>
-
-                        <div class="col-12 mt-2">
-                          <div class="form-check">
-                            <input name="is_superuser" type="checkbox" class="form-check-input" value="1" id="is_superuser" />
-                            <label class="form-check-label" for="is_superuser">Superuser</label>
-                          </div>
-                          <div class="hint">Acceso total. Úsalo solo para administradores.</div>
-                        </div>
-
-                      </div>
-                    </div>
-
-                    <div class="alert alert-warning rounded-4 mt-3 mb-0">
-                      <strong>Recomendación:</strong> evita Superuser para cuentas normales.
-                    </div>
-                  </div>
-                </div>
-
-                <div class="d-flex flex-column flex-sm-row gap-2 mt-3">
-                  <button class="btn btn-gradient flex-fill">✅ Crear usuario</button>
-                  <a href="/app/" class="btn btn-outline-secondary btn-pill flex-fill">Cancelar</a>
-                </div>
-
-              </div>
-
-            </div>
-          </form>
-
+          <div class="topbar-meta">
+            <span class="chip chip-muted">Gestión de accesos</span>
+          </div>
         </div>
-      </div>
+
+        <div class="topbar-actions">
+          <a href="/app/" class="btn btn-outline-secondary btn-sm btn-soft">
+            Volver
+          </a>
+        </div>
+      </header>
+
+      <!-- HERO -->
+      <section class="hero-strip">
+        <div class="hero-copy">
+          <div class="hero-title">Crear nuevo usuario</div>
+          <div class="hero-sub">
+            Define credenciales y asigna permisos de acceso.
+          </div>
+        </div>
+
+        <div class="hero-stats">
+          <div class="mini-stat">
+            <div class="mini-stat-label">Tipo</div>
+            <div class="mini-stat-value">Cuenta interna</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- MENSAJES -->
+      {% if messages %}
+        <div class="mb-3">
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} rounded-4 mb-2">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <!-- FORMULARIO -->
+      <main class="app-card app-card-pro">
+        <form method="post" action="" novalidate>
+          {% csrf_token %}
+
+          <div class="row g-4">
+
+            <!-- DATOS -->
+            <div class="col-lg-7">
+              <section class="panel panel-pro">
+                <div class="panel-head">
+                  <div>
+                    <div class="panel-title">Datos del usuario</div>
+                    <div class="panel-sub">Información básica y credenciales.</div>
+                  </div>
+                </div>
+
+                <div class="panel-body">
+                  <div class="row g-3">
+
+                    <div class="col-md-6">
+                      <label class="form-label">Usuario</label>
+                      <input name="username" class="form-control"
+                             placeholder="ej: admin_guard"
+                             autocomplete="username" required>
+                      <div class="form-text">Debe ser único.</div>
+                    </div>
+
+                    <div class="col-md-6">
+                      <label class="form-label">Contraseña</label>
+                      <input id="password" name="password" type="password"
+                             class="form-control"
+                             autocomplete="new-password" required>
+
+                      <div class="d-flex justify-content-between align-items-center mt-2">
+                        <div class="form-text m-0">Mínimo 8 caracteres.</div>
+                        <button type="button" id="togglePass" class="btn btn-outline-secondary btn-sm btn-soft">
+                          Mostrar
+                        </button>
+                      </div>
+                    </div>
+
+                    <div class="col-md-4">
+                      <label class="form-label">Nombre</label>
+                      <input name="first_name" class="form-control">
+                    </div>
+
+                    <div class="col-md-4">
+                      <label class="form-label">Apellido</label>
+                      <input name="last_name" class="form-control">
+                    </div>
+
+                    <div class="col-md-4">
+                      <label class="form-label">Correo</label>
+                      <input name="email" type="email"
+                             class="form-control"
+                             autocomplete="email">
+                    </div>
+
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <!-- PERMISOS -->
+            <div class="col-lg-5">
+              <section class="panel panel-pro">
+                <div class="panel-head">
+                  <div>
+                    <div class="panel-title">Rol y permisos</div>
+                    <div class="panel-sub">Controla el nivel de acceso.</div>
+                  </div>
+                </div>
+
+                <div class="panel-body">
+                  <div class="mb-3">
+                    <label class="form-label">Grupo</label>
+                    <select name="group" class="form-select">
+                      <option value="">Sin grupo</option>
+                      {% for g in groups %}
+                        <option value="{{ g.id }}">{{ g.name }}</option>
+                      {% endfor %}
+                    </select>
+                    <div class="form-text">Define permisos por grupo.</div>
+                  </div>
+
+                  <div class="checks-card">
+                    <div class="form-check">
+                      <input name="is_active" type="checkbox"
+                             class="form-check-input" checked id="is_active">
+                      <label class="form-check-label" for="is_active">
+                        Usuario activo
+                      </label>
+                    </div>
+
+                    <div class="form-check mt-2">
+                      <input name="is_staff" type="checkbox"
+                             class="form-check-input" id="is_staff">
+                      <label class="form-check-label" for="is_staff">
+                        Acceso administrativo
+                      </label>
+                    </div>
+
+                    <div class="form-check mt-2">
+                      <input name="is_superuser" type="checkbox"
+                             class="form-check-input" id="is_superuser">
+                      <label class="form-check-label" for="is_superuser">
+                        Acceso total
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="alert alert-warning rounded-4 mt-3 mb-0">
+                    Usa acceso total solo para administradores principales.
+                  </div>
+                </div>
+              </section>
+
+              <div class="d-flex flex-column flex-sm-row gap-2 mt-3">
+                <button class="btn btn-primary-custom flex-fill">
+                  Crear usuario
+                </button>
+                <a href="/app/" class="btn btn-outline-secondary btn-soft flex-fill">
+                  Cancelar
+                </a>
+              </div>
+            </div>
+
+          </div>
+        </form>
+      </main>
 
     </div>
-
   </div>
 
   <script>
-    // Mostrar/Ocultar contraseña
     const pass = document.getElementById('password');
     const toggle = document.getElementById('togglePass');
     toggle?.addEventListener('click', () => {
-      const isHidden = pass.type === 'password';
-      pass.type = isHidden ? 'text' : 'password';
-      toggle.textContent = isHidden ? 'Ocultar' : 'Mostrar';
+      const hidden = pass.type === 'password';
+      pass.type = hidden ? 'text' : 'password';
+      toggle.textContent = hidden ? 'Ocultar' : 'Mostrar';
     });
   </script>
+
 </body>
 </html>

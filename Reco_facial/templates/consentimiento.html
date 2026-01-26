@@ -1,0 +1,111 @@
+{% load static %}
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Consentimiento de uso de datos biométricos</title>
+
+  <link rel="stylesheet" href="{% static 'css/login.css' %}">
+  <link rel="icon" href="{% static 'images/logo.png' %}" type="image/png">
+</head>
+
+<body class="app-bg app-bg-image consent-page">
+
+  <div class="page-wrap page-center">
+    <div class="container d-flex justify-content-center align-items-center">
+
+      <div class="consent-card login-glass consent-animate">
+        <div class="consent-top">
+         
+
+          <div class="consent-head">
+            <h2 class="consent-title">Consentimiento de uso de datos biométricos</h2>
+            <p class="consent-sub">
+              Antes de continuar, necesitamos tu autorización para el tratamiento de tu imagen y características faciales.
+            </p>
+          </div>
+        </div>
+
+        <div class="consent-scroll fade-scroll" id="consentScroll" role="region" aria-label="Texto de consentimiento">
+          <div class="consent-body">
+            <p>
+              Estimado/a
+              <strong>{{ user.get_full_name|default:user.username }}</strong>,
+              para poder utilizar el sistema de reconocimiento facial necesitamos tu consentimiento para el tratamiento de tus datos biométricos.
+            </p>
+
+            <p>
+              De acuerdo con la Ley Orgánica de Protección de Datos Personales de Ecuador, tus datos serán usados exclusivamente
+              para fines de autenticación y control de acceso dentro de esta institución. Serán almacenados de forma segura y
+              no serán compartidos con terceros sin tu autorización, salvo obligación legal.
+            </p>
+
+            <p>
+              Al aceptar, autorizas el procesamiento de imágenes y características faciales asociadas a tu cuenta.
+              Puedes revocar este consentimiento en cualquier momento contactando al administrador del sistema. La revocatoria
+              puede limitar el acceso a funciones que dependan del reconocimiento facial.
+            </p>
+
+            <div class="consent-highlight">
+              <div class="consent-highlight__title">Importante</div>
+              <div class="consent-highlight__text">
+                Te recomendamos leer con calma. Si no estás de acuerdo, puedes cancelar y volver al inicio.
+              </div>
+            </div>
+
+            
+          </div>
+        </div>
+
+        <form method="post" action="" class="consent-form">
+          {% csrf_token %}
+
+          <div class="form-check consent-check">
+            <input class="form-check-input" type="checkbox" id="accept" name="accept" required>
+            <label class="form-check-label" for="accept">
+              Acepto el uso de mi imagen y datos biométricos conforme a lo descrito.
+            </label>
+          </div>
+
+          <div class="consent-actions">
+            <button type="submit" class="btn btn-primary-custom w-100 btn-pro">
+              Aceptar y continuar
+            </button>
+
+            <a href="/login/" class="btn btn-outline-secondary w-100 mt-2">
+              Cancelar
+            </a>
+          </div>
+
+          <div class="consent-mini">
+            Tu consentimiento puede ser revocado en cualquier momento contactando al administrador.
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // Fecha legible (local)
+    document.getElementById('consentDate').textContent = new Date().toLocaleDateString('es-EC', {
+      year: 'numeric', month: 'long', day: 'numeric'
+    });
+
+    // Fade dinámico: si hay scroll, muestra el degradado; si está al final, lo oculta
+    const el = document.getElementById('consentScroll');
+    const updateFade = () => {
+      if (!el) return;
+      const atBottom = Math.ceil(el.scrollTop + el.clientHeight) >= el.scrollHeight;
+      el.classList.toggle('fade-scroll--end', atBottom);
+    };
+    if (el) {
+      updateFade();
+      el.addEventListener('scroll', updateFade, { passive: true });
+      window.addEventListener('resize', updateFade);
+    }
+  </script>
+
+</body>
+</html>

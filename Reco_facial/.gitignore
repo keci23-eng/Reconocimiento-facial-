@@ -6,3 +6,5 @@ media/
 *.sqlite3
 env/
 /.vscode/
+# Local environment file containing sensitive secrets (do NOT commit)
+.env

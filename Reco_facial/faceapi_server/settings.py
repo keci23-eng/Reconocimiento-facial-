@@ -106,3 +106,5 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     ],
 }
+
+# (Email configuration removed — project restored to pre-email state)

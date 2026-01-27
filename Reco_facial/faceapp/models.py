@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 
 class Student(models.Model):
@@ -22,3 +23,16 @@ class Detection(models.Model):
 
     def __str__(self):
         return f"Detection {self.id} @ {self.timestamp} -> {self.recognized_name or 'Unknown'}"
+
+
+class Consentimiento(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='consentimiento')
+    username = models.CharField(max_length=150)
+    accepted = models.BooleanField(default=False)
+    accepted_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'consentimiento'
+
+    def __str__(self):
+        return f"Consentimiento: {self.username} - {'Aceptado' if self.accepted else 'No aceptado'}"

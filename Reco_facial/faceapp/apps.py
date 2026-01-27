@@ -6,8 +6,14 @@ class FaceappConfig(AppConfig):
     name = 'faceapp'
 
     def ready(self):
-        # Ensure required groups exist
-        from django.contrib.auth.models import Group
+        # Create required groups after migrations have run to avoid
+        # accessing the database during app import/initialization.
+        from django.db.models.signals import post_migrate
 
-        for grp in ('ADMIN', 'STUDENT', 'GUARD'):
-            Group.objects.get_or_create(name=grp)
+        def _create_groups(sender, **kwargs):
+            from django.contrib.auth.models import Group
+
+            for grp in ('ADMIN', 'STUDENT', 'GUARD'):
+                Group.objects.get_or_create(name=grp)
+
+        post_migrate.connect(_create_groups, sender=self)

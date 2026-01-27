@@ -2,7 +2,7 @@ from django.urls import path
 from django.views.generic.base import RedirectView
 from .views import (
     IndexView, RegisterStudentAPIView, DetectAPIView, StudentListAPIView,
-    LoginView, LogoutView, StudentDashboardView, GuardView,
+    LoginView, LogoutView, StudentDashboardView, GuardView, ConsentView,
     UploadPageView, GuardDetectionsView, DetectionListAPIView,
 )
 from .views import CreateUserView
@@ -14,6 +14,7 @@ urlpatterns = [
     path('register/', RedirectView.as_view(url='/register/upload/', permanent=False)),
     path('register/upload/', UploadPageView.as_view(), name='student-upload'),
     path('login/', LoginView.as_view(), name='login'),
+    path('consentimiento/', ConsentView.as_view(), name='consentimiento'),
     path('logout/', LogoutView.as_view(), name='logout'),
     path('student/', StudentDashboardView.as_view(), name='student-dashboard'),
     path('guard/', GuardView.as_view(), name='guard-view'),
@@ -23,4 +24,5 @@ urlpatterns = [
     path('api/detect/', DetectAPIView.as_view(), name='api-detect'),
     path('api/detections/', DetectionListAPIView.as_view(), name='api-detections'),
     path('api/students/', StudentListAPIView.as_view(), name='api-students'),
+    
 ]

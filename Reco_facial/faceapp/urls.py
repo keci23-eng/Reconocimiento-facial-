@@ -1,9 +1,9 @@
 from django.urls import path
-from django.views.generic.base import RedirectView
+from django.views.generic.base import RedirectView, TemplateView
 from .views import (
     IndexView, RegisterStudentAPIView, DetectAPIView, StudentListAPIView,
-    LoginView, LogoutView, StudentDashboardView, GuardView, ConsentView,
-    UploadPageView, GuardDetectionsView, DetectionListAPIView,
+    LoginView, LogoutView, StudentDashboardView, GuardView, ConsentView
+   , GuardDetectionsView, DetectionListAPIView,
 )
 from .views import CreateUserView
 
@@ -12,7 +12,9 @@ urlpatterns = [
     path('app/', IndexView.as_view(), name='app-index'),
     # keep /register/ reachable but redirect to the upload-only page
     path('register/', RedirectView.as_view(url='/register/upload/', permanent=False)),
-    path('register/upload/', UploadPageView.as_view(), name='student-upload'),
+    # serve upload form for admins to register students via file upload
+    path('register/upload/', TemplateView.as_view(template_name='student_upload.html')),
+   
     path('login/', LoginView.as_view(), name='login'),
     path('consentimiento/', ConsentView.as_view(), name='consentimiento'),
     path('logout/', LogoutView.as_view(), name='logout'),

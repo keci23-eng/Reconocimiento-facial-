@@ -1,9 +1,7 @@
-import io
 import json
 
 from django.shortcuts import render, redirect
 from django.http import HttpResponseForbidden
-from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
@@ -11,68 +9,60 @@ from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.contrib import messages
 from django.contrib.auth.models import User, Group
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
+from django.utils.decorators import method_decorator
+from rest_framework.permissions import AllowAny
+from rest_framework.views import APIView
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
-
+from .utils.emailing import send_email_brevo_template
 from .models import Student, Detection, Consentimiento
 from .serializers import StudentSerializer, DetectionSerializer
 from .utils.recognition import (
     get_face_encodings_from_fileobj,
     encoding_to_json,
-    json_to_encoding,
     find_best_match,
 )
-
-# (Email sending logic removed — restored to pre-email state)
+from .utils.emailing import send_email_brevo
+from rest_framework.authentication import BasicAuthentication
+from rest_framework.permissions import AllowAny
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from PIL import Image
+import io
+from django.core.files.base import ContentFile
 
 ALLOWED_CAREER = "SISTEMAS Y GESTION DE DATA"
 
 
+# ==========================
+# INDEX
+# ==========================
+@method_decorator(ensure_csrf_cookie, name='dispatch')
 class IndexView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
-        user = request.user
-        if not user or not user.is_authenticated:
+        if not request.user.is_authenticated:
             return redirect("/login/")
 
-        groups = [g.name for g in user.groups.all()]
+        groups = [g.name for g in request.user.groups.all()]
+
         if "GUARD" in groups:
             return redirect("/guard/")
         if "STUDENT" in groups:
             return redirect("/student/")
 
-        is_admin = user.is_superuser or user.groups.filter(name="ADMIN").exists()
+        is_admin = request.user.is_superuser or "ADMIN" in groups
         return render(request, "index.html", {"is_admin": is_admin})
 
 
-class RegisterPageView(APIView):
-    permission_classes = [AllowAny]
-
-    def get(self, request):
-        user = request.user
-        if not user or not user.is_authenticated:
-            return redirect("/login/")
-        if not (user.is_superuser or user.groups.filter(name="ADMIN").exists()):
-            return HttpResponseForbidden("No tienes permiso para acceder a esta página")
-        return render(request, "register.html")
-
-
-class UploadPageView(APIView):
-    permission_classes = [AllowAny]
-
-    def get(self, request):
-        user = request.user
-        if not user or not user.is_authenticated:
-            return redirect("/login/")
-        if not (user.is_superuser or user.groups.filter(name="ADMIN").exists()):
-            return HttpResponseForbidden("No tienes permiso para acceder a esta página")
-        return render(request, "student_upload.html")
-
-
+# ==========================
+# LOGIN / LOGOUT
+# ==========================
 class LoginView(APIView):
     permission_classes = [AllowAny]
 
@@ -80,71 +70,29 @@ class LoginView(APIView):
         return render(request, "login.html")
 
     def post(self, request):
-        username = request.data.get("username") or request.POST.get("username")
-        password = request.data.get("password") or request.POST.get("password")
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+
         user = authenticate(request, username=username, password=password)
 
-        if user is None:
+        if not user:
             return render(request, "login.html", {"error": "Credenciales inválidas"})
 
         login(request, user)
 
         groups = [g.name for g in user.groups.all()]
+
         if "ADMIN" in groups or user.is_superuser:
             return redirect("/app/")
         if "GUARD" in groups:
             return redirect("/guard/")
         if "STUDENT" in groups:
-            # check consentimiento
-            try:
-                c = Consentimiento.objects.get(user=user)
-                if c.accepted:
-                    return redirect("/student/")
-                return redirect("/consentimiento/")
-            except Consentimiento.DoesNotExist:
-                return redirect("/consentimiento/")
+            consentimiento = Consentimiento.objects.filter(user=user).first()
+            if consentimiento and consentimiento.accepted:
+                return redirect("/student/")
+            return redirect("/consentimiento/")
 
         return redirect("/")
-
-
-class ConsentView(APIView):
-    permission_classes = [AllowAny]
-
-    def get(self, request):
-        user = request.user
-        if not user or not user.is_authenticated:
-            return redirect("/login/")
-
-        groups = [g.name for g in user.groups.all()]
-        if "STUDENT" not in groups:
-            return HttpResponseForbidden("No tienes permiso para acceder a esta página")
-
-        return render(request, "consentimiento.html", {"user": user})
-
-    def post(self, request):
-        user = request.user
-        if not user or not user.is_authenticated:
-            return redirect("/login/")
-
-        accept = request.POST.get("accept")
-
-        if accept == "on":
-            c, created = Consentimiento.objects.get_or_create(
-                user=user, defaults={"username": user.username}
-            )
-            c.username = user.username
-            c.accepted = True
-            c.accepted_at = timezone.now()
-            c.save()
-
-            return redirect("/student/")
-
-        # Si no acepta => no puede continuar
-        messages.error(
-            request, "Debe aceptar los términos y condiciones para continuar."
-        )
-        logout(request)
-        return redirect("/login/")
 
 
 class LogoutView(APIView):
@@ -155,12 +103,66 @@ class LogoutView(APIView):
         return redirect("/login/")
 
 
+# ==========================
+# CONSENTIMIENTO
+# ==========================
+class ConsentView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return redirect("/login/")
+
+        if not request.user.groups.filter(name="STUDENT").exists():
+            return HttpResponseForbidden("No autorizado")
+
+        return render(request, "consentimiento.html")
+
+    def post(self, request):
+        if not request.user.is_authenticated:
+            return redirect("/login/")
+
+        accept = request.POST.get("accept")
+
+        if accept == "on":
+            consentimiento, _ = Consentimiento.objects.get_or_create(
+                user=request.user,
+                defaults={"username": request.user.username},
+            )
+
+            consentimiento.accepted = True
+            consentimiento.accepted_at = timezone.now()
+            consentimiento.save()
+
+            # 📧 EMAIL BREVO
+            send_email_brevo(
+                request.user.email,
+                "Consentimiento aceptado",
+                f"""
+                <h2>Hola {request.user.username}</h2>
+                <p>Gracias por aceptar el consentimiento.</p>
+                <p>Ya puedes usar el sistema.</p>
+                """
+            )
+
+            return redirect("/student/")
+
+        messages.error(request, "Debes aceptar el consentimiento")
+        logout(request)
+        return redirect("/login/")
+
+
+# ==========================
+# DASHBOARDS
+# ==========================
+@method_decorator(ensure_csrf_cookie, name='dispatch')
 class StudentDashboardView(APIView):
     @method_decorator(login_required)
     def get(self, request):
         return render(request, "student_register.html")
 
 
+@method_decorator(ensure_csrf_cookie, name='dispatch')
 class GuardView(APIView):
     @method_decorator(login_required)
     def get(self, request):
@@ -173,237 +175,187 @@ class GuardDetectionsView(APIView):
         return render(request, "guard_detections.html")
 
 
+# ==========================
+# REGISTRO ESTUDIANTE
+# ==========================
 class RegisterStudentAPIView(APIView):
     permission_classes = [AllowAny]
-    authentication_classes = []
 
-    def post(self, request, format=None):
-        name = request.data.get("name") or request.POST.get("name")
-        career = request.data.get("career") or request.POST.get("career")
+    def post(self, request):
+        name = request.POST.get("name")
+        career = request.POST.get("career")
+        correo = request.POST.get("correo")
         image = request.FILES.get("image")
-        client_ts = request.data.get("client_timestamp") or request.POST.get(
-            "client_timestamp"
-        )
 
-        user = request.user if hasattr(request, "user") else None
-
-        # Si es STUDENT logueado: solo nombre+imagen y career fija
-        if user and user.is_authenticated and user.groups.filter(name="STUDENT").exists():
-            if not name or not image:
-                return Response(
-                    {"error": "Nombre e imagen son obligatorios."},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            career = ALLOWED_CAREER
-        else:
-            if not name or not career or not image:
-                return Response(
-                    {"error": "Nombre, carrera e imagen son obligatorios."},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+        if not name or not image:
+            return Response({"error": "Datos incompletos"}, status=400)
 
         if career.strip().upper() != ALLOWED_CAREER:
-            return Response(
-                {"error": f'Solo se permite registrar la carrera "{ALLOWED_CAREER}".'},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return Response({"error": "Carrera no permitida"}, status=400)
 
         encodings = get_face_encodings_from_fileobj(image)
         if not encodings:
-            return Response(
-                {"error": "No se encontró un rostro en la imagen proporcionada."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return Response({"error": "No se detectó rostro"}, status=400)
 
-        encoding = encodings[0]
-        student = Student(name=name, career=career)
-        student.encoding = encoding_to_json(encoding)
-
-        # created_at desde cliente o servidor
-        if client_ts:
-            parsed = parse_datetime(client_ts)
-            if parsed is not None:
-                if timezone.is_naive(parsed):
-                    parsed = timezone.make_aware(
-                        parsed, timezone.get_current_timezone()
-                    )
-                student.created_at = parsed
-            else:
-                student.created_at = timezone.now()
-        else:
-            student.created_at = timezone.now()
-
-        try:
-            image.seek(0)
-        except Exception:
-            pass
+        student = Student(
+            name=name,
+            career=career,
+            correo=correo,
+            encoding=encoding_to_json(encodings[0]),
+            created_at=timezone.now(),
+        )
 
         student.image.save(image.name, image, save=False)
         student.save()
 
-        # (Email notifications removed)
+        # 📧 EMAIL BREVO – AVISO BIOMÉTRICO
+        if correo:
+             send_email_brevo_template(
+        correo,
+        template_id=2,   # 👈 ESTE ES EL ID DE TU PLANTILLA
+        params={
+            "NOMBRE": name
+        }
+    )
+
+        return Response({"ok": True}, status=201)
 
 
-        return Response({"ok": True, "student_id": student.id}, status=status.HTTP_201_CREATED)
-
-
+# ==========================
+# DETECCIÓN
+# ==========================
+@method_decorator(csrf_exempt, name="dispatch")
 class DetectAPIView(APIView):
     permission_classes = [AllowAny]
-    authentication_classes = []
+    authentication_classes = [BasicAuthentication]  # 🔥 CLAVE
 
-    def post(self, request, format=None):
+    def post(self, request):
         image = request.FILES.get("image")
-        client_ts = request.data.get("client_timestamp") or request.POST.get(
-            "client_timestamp"
-        )
-
         if not image:
-            return Response({"error": "image required"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Imagen requerida"}, status=400)
 
-        image.seek(0)
         import face_recognition as fr
+        import json
 
         img = fr.load_image_file(image)
         locations = fr.face_locations(img)
         encodings = fr.face_encodings(img, locations)
-        if not encodings:
-            return Response({"detections": []})
+
+        # Read original uploaded bytes so we can save the full frame later
+        try:
+            image.seek(0)
+        except Exception:
+            pass
+        try:
+            original_bytes = image.read()
+        except Exception:
+            original_bytes = None
 
         students = list(Student.objects.all())
         known_encs = [json.loads(s.encoding) for s in students]
 
         results = []
+
         for enc, loc in zip(encodings, locations):
             idx, dist = find_best_match(known_encs, enc)
-            if idx is not None and dist is not None and dist <= 0.6:
+
+            if idx is not None and dist <= 0.6:
                 s = students[idx]
-                image.seek(0)
-                det = Detection(
-                    student=s,
-                    recognized_name=s.name,
-                    recognized_career=s.career,
-                    confidence=dist,
-                )
+                # Save the full original frame for this detection (not a tight crop)
+                try:
+                    filename = f"detection_{timezone.now().strftime('%Y%m%d%H%M%S%f')}.jpg"
+                    det = Detection(
+                        student=s,
+                        recognized_name=s.name,
+                        recognized_career=s.career,
+                        confidence=float(dist),
+                        timestamp=timezone.now(),
+                    )
+                    if original_bytes:
+                        det.image.save(filename, ContentFile(original_bytes), save=False)
+                    det.save()
+                except Exception:
+                    Detection.objects.create(
+                        student=s,
+                        recognized_name=s.name,
+                        recognized_career=s.career,
+                        confidence=float(dist),
+                        timestamp=timezone.now(),
+                    )
 
-                if client_ts:
-                    parsed = parse_datetime(client_ts)
-                    if parsed is not None:
-                        if timezone.is_naive(parsed):
-                            parsed = timezone.make_aware(
-                                parsed, timezone.get_current_timezone()
-                            )
-                        det.timestamp = parsed
-                    else:
-                        det.timestamp = timezone.now()
-                else:
-                    det.timestamp = timezone.now()
-
-                det.image.save(image.name, image, save=False)
-                det.save()
-
-                results.append(
-                    {
-                        "name": s.name,
-                        "career": s.career,
-                        "confidence": dist,
-                        "box": {
-                            "top": loc[0],
-                            "right": loc[1],
-                            "bottom": loc[2],
-                            "left": loc[3],
-                        },
+                results.append({
+                    "name": s.name,
+                    "career": s.career,
+                    "confidence": float(dist),
+                    "box": {
+                        "top": loc[0],
+                        "right": loc[1],
+                        "bottom": loc[2],
+                        "left": loc[3],
                     }
-                )
+                })
             else:
-                results.append(
-                    {
-                        "name": None,
-                        "career": None,
-                        "confidence": None,
-                        "box": {
-                            "top": loc[0],
-                            "right": loc[1],
-                            "bottom": loc[2],
-                            "left": loc[3],
-                        },
-                    }
-                )
+                # For unknown faces save the full original frame as well
+                try:
+                    filename = f"detection_unknown_{timezone.now().strftime('%Y%m%d%H%M%S%f')}.jpg"
+                    det = Detection(
+                        timestamp=timezone.now(),
+                        confidence=None,
+                    )
+                    if original_bytes:
+                        det.image.save(filename, ContentFile(original_bytes), save=False)
+                    det.save()
+                except Exception:
+                    Detection.objects.create(timestamp=timezone.now())
+
+                results.append({"name": None, "career": None})
 
         return Response({"detections": results})
 
 
+# ==========================
+# LISTADOS  
+# ==========================
 class StudentListAPIView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
-        qs = Student.objects.all()
-        data = StudentSerializer(qs, many=True, context={"request": request}).data
-        return Response(data)
+        students = Student.objects.all()
+        return Response(StudentSerializer(students, many=True).data)
 
 
 class DetectionListAPIView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
-        try:
-            limit = int(request.GET.get("limit") or 50)
-        except Exception:
-            limit = 50
-
-        qs = Detection.objects.order_by("-timestamp")[:limit]
-        data = DetectionSerializer(qs, many=True, context={"request": request}).data
-        return Response(data)
+        detections = Detection.objects.order_by("-timestamp")[:50]
+        return Response(DetectionSerializer(detections, many=True).data)
 
 
+# ==========================
+# CREAR USUARIOS
+# ==========================
 class CreateUserView(APIView):
     @method_decorator(login_required)
     def get(self, request):
-        user = request.user
-        if not (user.is_superuser or user.groups.filter(name="ADMIN").exists()):
-            return HttpResponseForbidden("No tienes permiso para acceder a esta página")
-        groups = Group.objects.all()
-        return render(request, "create_users.html", {"groups": groups})
+        if not request.user.groups.filter(name="ADMIN").exists():
+            return HttpResponseForbidden()
+        return render(request, "create_users.html", {"groups": Group.objects.all()})
 
     @method_decorator(login_required)
     def post(self, request):
-        user = request.user
-        if not (user.is_superuser or user.groups.filter(name="ADMIN").exists()):
-            return HttpResponseForbidden("No tienes permiso para realizar esta acción")
+        if not request.user.groups.filter(name="ADMIN").exists():
+            return HttpResponseForbidden()
 
-        username = request.POST.get("username")
-        password = request.POST.get("password")
-        first_name = request.POST.get("first_name")
-        last_name = request.POST.get("last_name")
-        email = request.POST.get("email")
-        is_staff = bool(request.POST.get("is_staff"))
-        is_active = bool(request.POST.get("is_active"))
-        is_superuser = bool(request.POST.get("is_superuser"))
-        group_id = request.POST.get("group")
-
-        if not username or not password:
-            messages.error(request, "El usuario y la contraseña son obligatorios.")
-            return redirect("/create_users/")
-
-        if User.objects.filter(username=username).exists():
-            messages.error(request, "Ya existe un usuario con ese nombre.")
-            return redirect("/create_users/")
-
-        new_user = User.objects.create_user(
-            username=username, email=email, password=password
+        user = User.objects.create_user(
+            username=request.POST["username"],
+            password=request.POST["password"],
+            email=request.POST.get("email"),
         )
-        new_user.first_name = first_name or ""
-        new_user.last_name = last_name or ""
-        new_user.is_staff = is_staff
-        new_user.is_active = is_active
-        new_user.is_superuser = is_superuser
-        new_user.save()
 
-        try:
-            if group_id:
-                g = Group.objects.get(id=int(group_id))
-                new_user.groups.add(g)
-        except Exception:
-            pass
+        group_id = request.POST.get("group")
+        if group_id:
+            user.groups.add(Group.objects.get(id=group_id))
 
-        messages.success(request, "Usuario creado correctamente.")
+        messages.success(request, "Usuario creado correctamente")
         return redirect("/app/")

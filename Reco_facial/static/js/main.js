@@ -38,10 +38,19 @@ async function sendDetection(){
     const fd = new FormData();
     fd.append('image', blob, 'frame.jpg');
     fd.append('client_timestamp', new Date().toISOString());
-    const res = await fetch('/api/detect/', {method:'POST', body:fd});
+    const csrftoken = getCookie('csrftoken');
+    const res = await fetch('/api/detect/', {method:'POST', body:fd, credentials: 'same-origin', headers: {'X-CSRFToken': csrftoken}});
     const data = await res.json();
     drawResults(data);
   }, 'image/jpeg');
+}
+
+// Read a cookie value by name (used to fetch CSRF token)
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
 }
 
 function drawResults(data){
@@ -94,7 +103,8 @@ captureRegisterBtn.addEventListener('click', async ()=>{
     fd.append('career', careerInput.value || 'SISTEMAS Y GESTION DE DATA');
     fd.append('image', file);
     fd.append('client_timestamp', new Date().toISOString());
-    fetch('/api/register/', {method:'POST', body:fd}).then(r=>r.json()).then(d=>{
+    const csrftoken = getCookie('csrftoken');
+    fetch('/api/register/', {method:'POST', body:fd, credentials: 'same-origin', headers: {'X-CSRFToken': csrftoken}}).then(r=>r.json()).then(d=>{
       alert('Registro completado');
       loadStudents();
     }).catch(err=>alert('Error al registrar: '+err.message));

@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   let lastRequest = 0;
   // send detection to server every 8000 ms (8 seconds)
-  const INTERVAL_MS = 7000;
+  const INTERVAL_MS = 5000;
    
 
   async function sendDetectionOnce(small=false){
@@ -59,7 +59,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
         const fd = new FormData();
         fd.append('image', blob, 'frame.jpg');
         fd.append('client_timestamp', new Date().toISOString());
-        const res = await fetch('/api/detect/', {method:'POST', body:fd});
+        const csrftoken = getCookie('csrftoken');
+        const res = await fetch('/api/detect/', {method:'POST', body:fd, credentials: 'same-origin', headers: {'X-CSRFToken': csrftoken}});
         const data = await res.json();
         drawResults(data);
       }catch(e){
@@ -199,3 +200,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
   setInterval(loadStudents, 5000);
 
 });
+
+// Read a cookie value by name (used to fetch CSRF token)
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
+}

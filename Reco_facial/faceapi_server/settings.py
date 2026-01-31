@@ -107,4 +107,8 @@ REST_FRAMEWORK = {
     ],
 }
 
-# (Email configuration removed — project restored to pre-email state)
+
+
+BREVO_API_KEY = "CLAVE-API-DE-BREVO-AQUI"
+BREVO_SENDER_EMAIL  = "CORREO-REMITENTE-DE-BREVO-AQUI"
+BREVO_SENDER_NAME = "Proyecto Reconocimiento Facial"

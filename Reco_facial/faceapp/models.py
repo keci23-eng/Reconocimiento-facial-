@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 class Student(models.Model):
     name = models.CharField(max_length=200)
     career = models.CharField(max_length=200)
+    correo = models.EmailField(max_length=254, null=True, blank=True)
     image = models.ImageField(upload_to='students/')
     encoding = models.TextField(help_text='JSON array of floats for face embedding')
     created_at = models.DateTimeField(null=True, blank=True)

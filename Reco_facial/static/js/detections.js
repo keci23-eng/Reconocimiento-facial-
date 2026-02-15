@@ -1,29 +1,28 @@
 document.addEventListener('DOMContentLoaded', ()=>{
   const tbody = document.getElementById('detectionsBody');
   let lastIds = new Set();
-
-  async function loadDetections(){
+  async function loadDetections(opts){
+    opts = opts || {};
     try{
-      const res = await fetch('/api/detections/?limit=50');
-      const data = await res.json();
-      if(!Array.isArray(data)) return;
+      const params = new URLSearchParams();
+      if(opts.q) params.set('q', opts.q);
+      if(opts.start) params.set('start', opts.start);
+      if(opts.end) params.set('end', opts.end);
+      params.set('limit', opts.limit || 200);
 
-      // normalize response shape (some endpoints return {detections: [...]})
+      const res = await fetch('/api/detections/?' + params.toString());
+      let data = await res.json();
       if(!Array.isArray(data)){
         if(Array.isArray(data.detections)) data = data.detections;
         else return;
       }
 
-      // clear existing rows before re-rendering to avoid duplicates
       tbody.innerHTML = '';
-
-      // Build rows (skip duplicates within the response)
       const seen = new Set();
       data.forEach(det => {
-        // compute a stable key: prefer `id`, otherwise fallback to combined fields
         const key = det.id ? `id:${det.id}` : `k:${(det.recognized_name||det.student||'')}:${det.timestamp||''}:${det.confidence||''}`;
-        if(seen.has(key)) return; // skip duplicate
-        seen.add(key);
+        if(seen.has(key)) return; seen.add(key);
+
         const tr = document.createElement('tr');
         const imgTd = document.createElement('td');
         const nameTd = document.createElement('td');
@@ -56,7 +55,26 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }
   }
 
-  // Poll every 5 seconds
+  // wire filters
+  const filterInput = document.getElementById('filterInput');
+  const startDate = document.getElementById('startDate');
+  const endDate = document.getElementById('endDate');
+  const filterBtn = document.getElementById('filterBtn');
+  const clearBtn = document.getElementById('clearBtn');
+
+  function gatherFilters(){
+    return {
+      q: filterInput?.value?.trim() || '',
+      start: startDate?.value || '',
+      end: endDate?.value || '',
+      limit: 200
+    };
+  }
+
+  filterBtn?.addEventListener('click', ()=>{ loadDetections(gatherFilters()); });
+  clearBtn?.addEventListener('click', ()=>{ if(filterInput) filterInput.value=''; if(startDate) startDate.value=''; if(endDate) endDate.value=''; loadDetections(); });
+
+  // initial load and polling every 10s
   loadDetections();
-  setInterval(loadDetections, 5000);
+  setInterval(()=>{ loadDetections(gatherFilters()); }, 10000);
 });

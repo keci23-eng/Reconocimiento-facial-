@@ -371,8 +371,42 @@ class DetectionListAPIView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
-        detections = Detection.objects.order_by("-timestamp")[:50]
-        return Response(DetectionSerializer(detections, many=True).data)
+        qs = Detection.objects.all()
+
+        # search query (name or career)
+        q = request.GET.get('q') or request.GET.get('search')
+        if q:
+            from django.db.models import Q
+            qs = qs.filter(
+                Q(recognized_name__icontains=q) | Q(recognized_career__icontains=q)
+            )
+
+        # date filtering: expect YYYY-MM-DD
+        start = request.GET.get('start')
+        end = request.GET.get('end')
+        try:
+            from django.utils.dateparse import parse_date
+            if start:
+                sd = parse_date(start)
+                if sd:
+                    qs = qs.filter(timestamp__date__gte=sd)
+            if end:
+                ed = parse_date(end)
+                if ed:
+                    qs = qs.filter(timestamp__date__lte=ed)
+        except Exception:
+            pass
+
+        # ordering and limit
+        qs = qs.order_by('-timestamp')
+        try:
+            limit = int(request.GET.get('limit') or 50)
+            if limit > 0:
+                qs = qs[:limit]
+        except Exception:
+            qs = qs[:50]
+
+        return Response(DetectionSerializer(qs, many=True).data)
 
 
 # ==========================

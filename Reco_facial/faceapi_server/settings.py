@@ -109,6 +109,7 @@ REST_FRAMEWORK = {
 
 
 
-BREVO_API_KEY = "CLAVE-API-DE-BREVO-AQUI"
-BREVO_SENDER_EMAIL  = "CORREO-REMITENTE-DE-BREVO-AQUI"
+BREVO_API_KEY = "replace-me-with-brevo-api-key"
+BREVO_SENDER_EMAIL  = "tu correo remitente verificado en Brevo"
 BREVO_SENDER_NAME = "Proyecto Reconocimiento Facial"
+

@@ -6,6 +6,8 @@ from .views import (
    , GuardDetectionsView, DetectionListAPIView,
 )
 from .views import CreateUserView
+from .views import StudentDetailAPIView, ManageStudentsView
+from .views import StudentDetailAPIView
 
 urlpatterns = [
     path('', RedirectView.as_view(url='/login/', permanent=False)),
@@ -26,5 +28,7 @@ urlpatterns = [
     path('api/detect/', DetectAPIView.as_view(), name='api-detect'),
     path('api/detections/', DetectionListAPIView.as_view(), name='api-detections'),
     path('api/students/', StudentListAPIView.as_view(), name='api-students'),
+    path('api/students/<int:pk>/', StudentDetailAPIView.as_view(), name='api-student-detail'),
+    path('manage_students/', ManageStudentsView.as_view(), name='manage-students'),
     
 ]

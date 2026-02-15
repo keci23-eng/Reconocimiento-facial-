@@ -41,6 +41,10 @@
         </div>
       </header>
 
+        <div style="padding:12px 0">
+          <a href="/manage_students/" class="btn btn-outline-primary btn-sm">Administrar estudiantes</a>
+        </div>
+
       <section class="hero-strip">
         <div class="hero-copy">
           <div class="hero-title">Registrar rostro</div>
@@ -55,8 +59,13 @@
           
         </div>
       </section>
+      <div class="mb-3">
+        <button id="tabRegister" class="btn btn-outline-secondary btn-sm">Registrar estudiante</button>
+        <button id="tabView" class="btn btn-outline-secondary btn-sm">Ver estudiantes</button>
+      </div>
 
       <main class="app-card app-card-pro">
+        <div id="registerPane">
         <div class="row g-4">
 
           <div class="col-lg-7">
@@ -126,6 +135,27 @@
           </div>
 
         </div>
+        </div>
+
+        <div id="listPane" style="display:none; padding:20px;">
+          <h5>Estudiantes registrados</h5>
+          <div class="table-responsive">
+            <table class="table table-sm table-striped">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nombre</th>
+                  <th>Carrera</th>
+                  <th>Correo</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="studentsTableBody">
+                <tr><td colspan="5">Cargando...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </main>
 
     </div>
@@ -141,6 +171,35 @@
       </div>
       <div class="modal-pro-actions">
         <button id="careerModalClose" class="btn btn-primary-custom btn-sm">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para actualizar estudiante -->
+  <div id="studentsModal" class="modal-pro" role="dialog" style="display:none;">
+    <div class="modal-pro-card" role="document" style="max-width:520px;">
+      <div class="modal-pro-title">Actualizar estudiante</div>
+      <div class="modal-pro-text">
+        <div class="mb-2">
+          <label class="form-label">Nombre</label>
+          <input id="editName" class="form-control">
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Carrera</label>
+          <input id="editCareer" class="form-control">
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Correo</label>
+          <input id="editCorreo" class="form-control">
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Imagen (opcional)</label>
+          <input id="editImage" type="file" accept="image/*" class="form-control">
+        </div>
+      </div>
+      <div class="modal-pro-actions">
+        <button id="studentsModalClose" class="btn btn-secondary btn-sm">Cerrar</button>
+        <button id="studentsModalSave" class="btn btn-primary btn-sm">Guardar</button>
       </div>
     </div>
   </div>
@@ -162,6 +221,19 @@
         sync();
         new MutationObserver(sync).observe(status, { childList: true, subtree: true });
       }
+    });
+  </script>
+
+  <script src="{% static 'js/students_table.js' %}"></script>
+  <script>
+    // tab switching
+    document.addEventListener('DOMContentLoaded', ()=>{
+      const tabReg = document.getElementById('tabRegister');
+      const tabView = document.getElementById('tabView');
+      const reg = document.getElementById('registerPane');
+      const list = document.getElementById('listPane');
+      if(tabReg) tabReg.addEventListener('click', ()=>{ reg.style.display='block'; list.style.display='none'; });
+      if(tabView) tabView.addEventListener('click', ()=>{ reg.style.display='none'; list.style.display='block'; loadStudents(); });
     });
   </script>
 

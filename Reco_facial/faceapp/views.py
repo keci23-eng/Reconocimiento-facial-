@@ -324,6 +324,49 @@ class StudentListAPIView(APIView):
         return Response(StudentSerializer(students, many=True).data)
 
 
+class StudentDetailAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, pk):
+        try:
+            s = Student.objects.get(pk=pk)
+        except Student.DoesNotExist:
+            return Response({"error": "Not found"}, status=404)
+        return Response(StudentSerializer(s).data)
+
+    def post(self, request, pk):
+        # Accept POST for updates (easier from browser FormData)
+        try:
+            s = Student.objects.get(pk=pk)
+        except Student.DoesNotExist:
+            return Response({"error": "Not found"}, status=404)
+
+        name = request.POST.get('name') or request.data.get('name')
+        career = request.POST.get('career') or request.data.get('career')
+        correo = request.POST.get('correo') or request.data.get('correo')
+        image = request.FILES.get('image')
+
+        if name is not None:
+            s.name = name
+        if career is not None:
+            s.career = career
+        if correo is not None:
+            s.correo = correo
+        if image is not None:
+            s.image.save(image.name, image, save=False)
+
+        s.save()
+        return Response(StudentSerializer(s).data)
+
+    def delete(self, request, pk):
+        try:
+            s = Student.objects.get(pk=pk)
+        except Student.DoesNotExist:
+            return Response({"error": "Not found"}, status=404)
+        s.delete()
+        return Response({"ok": True})
+
+
 class DetectionListAPIView(APIView):
     permission_classes = [AllowAny]
 
@@ -359,3 +402,12 @@ class CreateUserView(APIView):
 
         messages.success(request, "Usuario creado correctamente")
         return redirect("/app/")
+
+
+class ManageStudentsView(APIView):
+    @method_decorator(login_required)
+    def get(self, request):
+        # Only allow admins
+        if not (request.user.is_superuser or request.user.groups.filter(name="ADMIN").exists()):
+            return HttpResponseForbidden()
+        return render(request, "manage_students.html")

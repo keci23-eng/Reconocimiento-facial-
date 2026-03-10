@@ -41,9 +41,11 @@
         </div>
       </header>
 
+      {% if request.user.is_authenticated and is_admin %}
       <div style="padding:12px 0">
         <a href="/manage_students/" class="btn btn-outline-primary btn-sm">Administrar estudiantes</a>
       </div>
+      {% endif %}
 
       <section class="hero-strip">
         <div class="hero-copy">

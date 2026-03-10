@@ -42,11 +42,12 @@
                   <th>Nombre</th>
                   <th>Carrera</th>
                   <th>Correo</th>
-                  <th>Acciones</th>
+                  <th style="width:110px; text-align:center;">Estado</th>
+                  <th style="width:170px; text-align:center;">Acciones</th>
                 </tr>
               </thead>
               <tbody id="studentsTableBody">
-                <tr><td colspan="5">Cargando...</td></tr>
+                <tr><td colspan="6">Cargando...</td></tr>
               </tbody>
             </table>
           </div>
@@ -84,12 +85,12 @@
 
       <!-- delete confirmation modal -->
       <div id="confirmDeleteModal" class="modal-center" role="dialog" style="display:none;">
-        <div class="modal-center-card" role="document" style="max-width:420px;padding:18px;">
-          <div style="font-weight:600;margin-bottom:8px;">Confirmar eliminación</div>
-          <div style="margin-bottom:14px;">¿Seguro que quieres eliminar a <span id="confirmDeleteName"></span> ? Esta acción no se puede deshacer.</div>
+          <div class="modal-center-card" role="document" style="max-width:420px;padding:18px;">
+          <div style="font-weight:600;margin-bottom:8px;">Confirmar desactivación</div>
+          <div style="margin-bottom:14px;">¿Seguro que quieres desactivar a <span id="confirmDeleteName"></span>? Esta acción dejará al estudiante inactivo.</div>
           <div style="text-align:right;">
             <button onclick="closeConfirmDelete()" class="btn btn-secondary btn-sm me-2">Cancelar</button>
-            <button onclick="deleteStudentConfirmed()" class="btn btn-danger btn-sm">Eliminar</button>
+            <button onclick="deleteStudentConfirmed()" class="btn btn-warning btn-sm">Desactivar</button>
           </div>
         </div>
       </div>

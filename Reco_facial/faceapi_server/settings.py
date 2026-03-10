@@ -109,7 +109,11 @@ REST_FRAMEWORK = {
 
 
 
-BREVO_API_KEY = "replace-me-with-brevo-api-key"
-BREVO_SENDER_EMAIL  = "tu correo remitente verificado en Brevo"
+BREVO_API_KEY = "tu api de brevo"
+BREVO_SENDER_EMAIL  = "tu email de brevo"
 BREVO_SENDER_NAME = "Proyecto Reconocimiento Facial"
-
+# Template IDs (set these to your Brevo template IDs)
+BREVO_OTP_TEMPLATE_ID = None
+BREVO_CONSENT_TEMPLATE_ID = None
+# faceapi_server/settings.py
+BREVO_CONSENT_TEMPLATE_ID = 5 # <- reemplaza 12345 por el ID real de Brevo

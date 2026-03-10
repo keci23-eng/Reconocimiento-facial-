@@ -11,7 +11,7 @@ class StudentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Student
-        fields = ['id', 'name', 'career', 'correo', 'image']
+        fields = ['id', 'name', 'career', 'correo', 'image', 'activo']
 
     def get_image(self, obj):
         try:

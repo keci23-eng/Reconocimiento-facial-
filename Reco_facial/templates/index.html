@@ -42,10 +42,15 @@
             <a href="/create_users/" class="btn btn-outline-secondary btn-sm btn-soft">
               Crear usuarios
             </a>
+            <a href="/app/detections/" class="btn btn-outline-secondary btn-sm btn-soft ms-2">
+              Ver detecciones
+            </a>
           {% endif %}
+          {% if request.user.is_authenticated and is_admin %}
           <a href="/register" class="btn btn-primary-custom btn-sm">
             Registrar estudiante
           </a>
+          {% endif %}
           <a href="/logout/" class="btn btn-outline-danger btn-sm btn-soft">
             Cerrar sesión
           </a>

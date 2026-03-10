@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 
 class Student(models.Model):
@@ -9,6 +10,8 @@ class Student(models.Model):
     image = models.ImageField(upload_to='students/')
     encoding = models.TextField(help_text='JSON array of floats for face embedding')
     created_at = models.DateTimeField(null=True, blank=True)
+    # 1 = activo, 0 = inactivo
+    activo = models.SmallIntegerField(default=1, help_text='1 = activo, 0 = inactivo', db_index=True)
 
     def __str__(self):
         return f"{self.name} ({self.career})"
@@ -37,3 +40,18 @@ class Consentimiento(models.Model):
 
     def __str__(self):
         return f"Consentimiento: {self.username} - {'Aceptado' if self.accepted else 'No aceptado'}"
+
+
+class PasswordResetOTP(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    otp_hash = models.CharField(max_length=128)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    attempts = models.IntegerField(default=0)
+    used = models.BooleanField(default=False)
+
+    def is_expired(self):
+        return timezone.now() > self.expires_at
+
+    def __str__(self):
+        return f"PasswordResetOTP(user={self.user.username}, used={self.used}, expires_at={self.expires_at})"

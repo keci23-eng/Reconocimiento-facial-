@@ -39,8 +39,8 @@
         </div>
 
         <div class="topbar-actions">
-          <a href="/guard/" class="btn btn-outline-secondary btn-sm btn-soft">
-            Volver a cámara
+          <a href="{{ back_url|default:'/guard/' }}" class="btn btn-outline-secondary btn-sm btn-soft">
+            Volver
           </a>
         </div>
       </header>
@@ -99,6 +99,14 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-center mt-3">
+          <div id="paginationControls" class="d-inline-flex align-items-center gap-3">
+            <button id="pagePrev" class="btn btn-sm btn-outline-secondary">&lt;</button>
+            <div id="pageInfo">Página 1 de 1 · Total: 0</div>
+            <button id="pageNext" class="btn btn-sm btn-outline-secondary">&gt;</button>
           </div>
         </div>
 

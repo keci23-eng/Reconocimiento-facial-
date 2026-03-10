@@ -41,10 +41,14 @@
         </div>
       </header>
 
+        {% if request.user.is_authenticated and is_admin %}
         <div style="padding:12px 0">
-          <a href="/manage_students/" class="btn btn-outline-primary btn-sm">Administrar estudiantes</a>
+          <a href="/manage_students/" class="btn btn-outline-primary btn-sm me-2">Administrar estudiantes</a>
+          <a href="/app/detections/" class="btn btn-outline-primary btn-sm">Ver detecciones</a>
         </div>
+        {% endif %}
 
+      <div id="status" style="display:none;" aria-hidden="true"></div>
       <section class="hero-strip">
         <div class="hero-copy">
           <div class="hero-title">Registrar rostro</div>
@@ -59,10 +63,12 @@
           
         </div>
       </section>
+      {% if request.user.is_authenticated and is_admin %}
       <div class="mb-3">
         <button id="tabRegister" class="btn btn-outline-secondary btn-sm">Registrar estudiante</button>
         <button id="tabView" class="btn btn-outline-secondary btn-sm">Ver estudiantes</button>
       </div>
+      {% endif %}
 
       <main class="app-card app-card-pro">
         <div id="registerPane">
@@ -116,8 +122,13 @@
                 </div>
 
                 <div class="mb-3">
+                  <label class="form-label">Correo</label>
+                  <input id="emailInput" name="correo" type="email" class="form-control" placeholder="ej: usuario@ejemplo.com" required>
+                </div>
+
+                <div class="mb-3">
                   <label class="form-label">Carrera</label>
-                  <input id="careerInput" class="form-control" value="SISTEMAS Y GESTION DE DATA" required>
+                  <input id="careerInput" class="form-control" value="{{ ALLOWED_CAREER }}" data-allowed-career="{{ ALLOWED_CAREER }}" required>
                   <div class="form-text">Solo se permite esta carrera.</div>
                 </div>
 
@@ -200,6 +211,25 @@
       <div class="modal-pro-actions">
         <button id="studentsModalClose" class="btn btn-secondary btn-sm">Cerrar</button>
         <button id="studentsModalSave" class="btn btn-primary btn-sm">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de éxito al registrar -->
+  <div id="successModal" class="modal-pro" role="dialog" style="display:none; position:fixed; inset:0; align-items:center; justify-content:center; background:rgba(0,0,0,0.35); z-index:2000;">
+    <div class="modal-pro-card modal-success" role="document" style="max-width:560px; width:92%; box-shadow:0 18px 40px rgba(0,0,0,0.35); border-radius:12px; text-align:center; padding:28px 32px; background:#fff;">
+      <div style="font-size:48px; line-height:1; margin-bottom:8px;">
+        <div style="display:inline-block; background:#e6fff0; border-radius:18px; padding:12px;">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="11" fill="#26a65b"/>
+            <path d="M7 13l3 3 7-7" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          </svg>
+        </div>
+      </div>
+      <div class="modal-pro-title" id="successModalTitle" style="font-size:20px; font-weight:600; margin-bottom:6px;">Se ha registrado exitosamente</div>
+      <div class="modal-pro-text" id="successModalText" style="color:#666; margin-bottom:18px;">El estudiante fue almacenado correctamente en el sistema.</div>
+      <div class="modal-pro-actions" style="justify-content:center;">
+        <button id="successModalClose" class="btn btn-primary-custom btn-sm">Aceptar</button>
       </div>
     </div>
   </div>

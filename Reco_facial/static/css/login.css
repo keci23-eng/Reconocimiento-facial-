@@ -1181,3 +1181,43 @@ body{
     max-height: 420px;
   }
 }
+/* ====== TABLA: GESTIÓN DE ESTUDIANTES ====== */
+#studentsTableBody td,
+#studentsTableBody th {
+  vertical-align: middle;
+}
+
+/* contenedor de foto */  
+.student-photo{
+  width: 64px;
+  height: 64px;
+  overflow: hidden;
+  border-radius: 6px;
+  background: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Estado centrado */
+.cell-state{
+  width: 110px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Acciones centradas + botones alineados */
+.cell-actions{
+  width: 170px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Botones en fila y dentro de su celda */
+.actions-cell{
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+}
+
